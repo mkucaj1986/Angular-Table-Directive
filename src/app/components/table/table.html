@@ -1,0 +1,57 @@
+<form class="form-horizontal" role="form" ng-submit="addRow()">
+	<div class="form-group">
+		<label class="col-md-2 control-label">Name</label>
+		<div class="col-md-4">
+			<input type="text" class="form-control" name="name"
+			ng-model="vm.name" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-md-2 control-label">Employees</label>
+		<div class="col-md-4">
+			<input type="text" class="form-control" name="employees"
+			ng-model="vm.employees" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-md-2 control-label">Age</label>
+		<div class="col-md-4">
+			<input type="text" class="form-control" name="age"
+			ng-model="vm.age" />
+		</div>
+	</div>
+	<div class="form-group">
+		<div style="padding-left:110px">
+			<input type="submit" value="Submit" class="btn btn-primary"/>
+		</div>
+	</div>
+
+	<div class="form-group">
+	    <div class="input-group">
+	      <div class="input-group-addon"><i class="fa fa-search"></i></div>
+
+	      <input type="text" class="form-control" placeholder="Search" ng-model="searchData">
+
+	    </div>      
+	  </div
+</form>
+<table class="table">
+	<thead>	<tr>
+		<th><a href="" ng-click="sortData('name')">Name</a>
+	</th>
+	<th><a href="" ng-click="sortData('employees')">Employees</a>
+</th>
+<th><a href="" ng-click="sortData('headoffice')">Age</a>
+</th>
+<th>Action
+</th>
+</tr></thead>
+<tbody><tr ng-repeat="company in vm.companies  | filter: searchData | orderBy:orderByField:sortReverse">
+<td>{{company.name}}
+</td>
+<td>{{company.employees}}
+</td>
+<td>{{company.age}}
+</td>
+</tr></tbody>
+</table>
