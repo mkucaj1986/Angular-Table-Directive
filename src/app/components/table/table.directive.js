@@ -10,44 +10,51 @@
         .directive('tableDirective', tableDirective);
 
     /** @ngInject */
-    function tableDirective() {
+    function tableDirective($compile) {
         var directive = {
             link: link,
             bindToController: true,
             controller: directiveTableCOntroler,
             controllerAs: 'vm',
             scope: {},
-            restrict: 'EA',
-            templateUrl: 'app/components/table/table.html',
-            transclude: true
+            restrict: 'EA'
         };
         return directive;
         /** @ngInject */
         function link(scope, element, attrs, vm) {
+            console.log(scope);
+            console.log(element);
+            console.log(attrs);
 
-            scope.sortReverse = false;
+            var table, thead, tableHead, cells, template, compileScope, template, tableBody, cellsLength, newRow;
 
-            scope.sortData = function(orderField) {
-                scope.sortReverse = !scope.sortReverse;
-                scope.orderByField = orderField;
-            };
+            compileScope = scope;
+            cells = angular.element($('td'));
+            table = angular.element($('table'));
+            thead = angular.element($('th'));
+            newRow = '';
+            cellsLength = table[0].rows[0].cells.length;
+            scope.thRows = [];
 
-            scope.addRow = function() {
-                vm.companies.push({
-                    'name': vm.name,
-                    'employees': vm.employees,
-                    'age': vm.age
-                });
-                vm.name = '';
-                vm.employees = '';
-                vm.age = '';
-            };
+            angular.forEach(thead, function(item) {
+                return scope.thRows.push(item.innerHTML);
+            });
+
+            for (var i = 0; i < cellsLength; i++) {
+                newRow += '<td></td>';
+            }
+            tableHead = '<thead><tr><th class="thclass" ng-repeat="th in thRows">{{th}}</th></tr></thead>';
+            tableBody = '<tbody><tr class="tbodyRow">' + newRow + '</tr></tbody>';
+
+            template = angular.element(tableHead + tableBody);
+            console.log(template);
+            $compile(template)(compileScope);
+            element.html(template);
         }
 
         function directiveTableCOntroler() {
-            /*jshint validthis: true */
-            var vm = this;
-            vm.companies = [];
+
+
         }
     }
 
