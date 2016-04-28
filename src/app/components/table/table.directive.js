@@ -63,13 +63,19 @@
             scope.newArr.sort();
             console.table(scope.newArr);
 
-            tableHead = '<thead><tr><th class="thclass" ng-repeat="th in thRows">{{th}}</th></tr></thead>';
+            tableHead = '<thead><tr><th ng-click="sortData($index)" class="thclass" ng-repeat="th in thRows">{{th}}</th></tr></thead>';
             tableBody = '<tbody>' + newRow + '</tbody>';
 
             template = angular.element(tableHead + tableBody);
             console.log(template);
             $compile(template)(compileScope);
             element.html(template);
+
+            scope.sortData = function ($index) {
+                console.log('click');
+                scope.index = $index;
+                console.log(scope.index);
+            }
         }
 
         function directiveTableCOntroler() {
