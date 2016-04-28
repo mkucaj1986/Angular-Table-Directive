@@ -35,16 +35,26 @@
             newRow = '';
             cellsLength = table[0].rows[0].cells.length;
             scope.thRows = [];
-
+            scope.tdRows = [];
+            scope.newArr = [];
             angular.forEach(thead, function(item) {
                 return scope.thRows.push(item.innerHTML);
             });
-
-            for (var i = 0; i < cellsLength; i++) {
-                newRow += '<td></td>';
+            angular.forEach(cells, function(item) {
+                scope.tdRows.push(item.innerHTML);
+            });
+            while(scope.tdRows.length) {
+                scope.newArr.push(scope.tdRows.splice(0, cellsLength));
             }
+
+            console.log(scope.newArr);
+            // Add <td></td>  dependent  on cellsLength
+            for (var i = 0; i < cellsLength; i++) {
+                newRow += '<tr class="tbodyRow" ><td ng-repeat="n in newArr[' + i + '] track by $index">{{n}}</td></tr>';
+            }
+
             tableHead = '<thead><tr><th class="thclass" ng-repeat="th in thRows">{{th}}</th></tr></thead>';
-            tableBody = '<tbody><tr class="tbodyRow">' + newRow + '</tr></tbody>';
+            tableBody = '<tbody>' + newRow + '</tbody>';
 
             template = angular.element(tableHead + tableBody);
             console.log(template);
