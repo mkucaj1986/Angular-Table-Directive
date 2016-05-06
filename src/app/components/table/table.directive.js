@@ -61,7 +61,19 @@
                     var self = this;
                     this.asc = !this.asc;
                     return this.sort(function(l, r) {
-                        return l[$index] > r[$index] ? (self.asc ? 1 : -1) : l[$index] < r[$index] ? (self.asc ? -1 : 1) : 0;
+                        var isnum = /^\d+$/.test(l[$index], r[$index]);
+                        var floatExtract = /(([1-9][0-9]*\.?[0-9]*)|(\.[0-9]+))([Ee][+-]?[0-9]+)?/.test(l[$index], r[$index]);
+                        var dateType = Date.parse(l[$index], r[$index]);
+                        console.log(dateType);
+                        if (isnum) {
+                            return parseInt(l[$index]) > parseInt(r[$index]) ? (self.asc ? 1 : -1) : parseInt(l[$index]) < parseInt(r[$index]) ? (self.asc ? -1 : 1) : 0;
+                        } else if (!isNaN(dateType)) {
+                            return new Date(l[$index]) > new Date(r[$index]) ? (self.asc ? 1 : -1) : new Date(l[$index]) < new Date(r[$index]) ? (self.asc ? -1 : 1) : 0;
+                        } else if (floatExtract) {
+                            return parseFloat(l[$index]) > parseFloat(r[$index]) ? (self.asc ? 1 : -1) : parseFloat(l[$index]) < parseFloat(r[$index]) ? (self.asc ? -1 : 1) : 0;
+                        } else {
+                            return l[$index] > r[$index] ? (self.asc ? 1 : -1) : l[$index] < r[$index] ? (self.asc ? -1 : 1) : 0;
+                        }
                     });
                 };
                 scope.newArr.toggled_sort();
