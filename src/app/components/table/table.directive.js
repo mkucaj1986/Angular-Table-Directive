@@ -55,8 +55,9 @@
                 scope.index = $index;
                
                 scope.newArr.toggled_sort = function() {
+                    console.log('sort');
                     var self = this;
-                    this.asc = !this.asc;
+                    self.asc = !self.asc;
                     return this.sort(function(l, r) {
                         var isnum = /^\d+$/.test(l[$index]);
                         var isCurency = /^(\$?\d{1,3}(,?\d{3})?(\.\d\d?)?|\(\$?\d{1,3}(,?\d{3})?(\.\d\d?)?\))$/.test(l[$index]);
@@ -76,7 +77,7 @@
                     });
                 };
                 scope.newArr.toggled_sort();
-
+                
                 function getDate(string) {
                     if (typeof string !== 'string') {
                         return false;
@@ -104,6 +105,8 @@
                     return false;
                 }
             };
+            // Default sort by first Column
+            scope.sortData('0');
         }
 
         function directiveTableCOntroler() {}
