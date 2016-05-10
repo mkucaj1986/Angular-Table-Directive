@@ -59,10 +59,13 @@
                     this.asc = !this.asc;
                     return this.sort(function(l, r) {
                         var isnum = /^\d+$/.test(l[$index]);
+                        var isCurency = /^(\$?\d{1,3}(,?\d{3})?(\.\d\d?)?|\(\$?\d{1,3}(,?\d{3})?(\.\d\d?)?\))$/.test(l[$index]);
                         var floatExtract = /(([1-9][0-9]*\.?[0-9]*)|(\.[0-9]+))([Ee][+-]?[0-9]+)?/.test(l[$index]);
                         var isDate = getDate(l[$index]);
                         if (isnum) {
                             return parseInt(l[$index]) > parseInt(r[$index]) ? (self.asc ? 1 : -1) : parseInt(l[$index]) < parseInt(r[$index]) ? (self.asc ? -1 : 1) : 0;
+                        } else if (isCurency) {
+                            return  Number(l[$index].replace(/(^\$|,)/g,'')) >  Number(r[$index].replace(/(^\$|,)/g,'')) ? (self.asc ? 1 : -1) : Number(l[$index].replace(/(^\$|,)/g,'')) <  Number(r[$index].replace(/(^\$|,)/g,'')) ? (self.asc ? -1 : 1) : 0;
                         } else if (isDate) {
                             return new Date(l[$index]) > new Date(r[$index]) ? (self.asc ? 1 : -1) : new Date(l[$index]) < new Date(r[$index]) ? (self.asc ? -1 : 1) : 0;
                         } else if (floatExtract && !isDate) {
