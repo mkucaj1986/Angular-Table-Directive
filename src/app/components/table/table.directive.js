@@ -2,26 +2,26 @@
 /* jshint strict: false */
 /*global $, jQuery*/
 (function() {
-        'use strict';
-        angular
-            .module('pro')
-            .directive('tableDirective', tableDirective);
+    'use strict';
+    angular
+        .module('pro')
+        .directive('tableDirective', tableDirective)
+        .directive('draggable', draggable)
+        .directive('droppable', droppable);
+    /** @ngInject */
+    function tableDirective($compile, $filter) {
+        var directive = {
+            link: link,
+            bindToController: true,
+            controller: directiveTableCOntroler,
+            controllerAs: 'vm',
+            scope: {},
+            restrict: 'EA'
+        };
+        return directive;
         /** @ngInject */
-        function tableDirective($compile, $filter) {
-            var directive = {
-                link: link,
-                bindToController: true,
-                controller: directiveTableCOntroler,
-                controllerAs: 'vm',
-                scope: {},
-                restrict: 'EA'
-            };
-            return directive;
-            /** @ngInject */
-            function link(scope, element, attrs, vm) {
-
-            var table, thead, tableHead, cells, template, compileScope, template, tableBody, cellsLength, newRow, rowCount;
-
+        function link(scope, element, attrs, vm) {
+            var table, thead, tableHead, cells, template, compileScope, tableBody, cellsLength, newRow, rowCount;
             compileScope = scope;
             cells = angular.element($('td'));
             table = angular.element($('table'));
@@ -43,17 +43,16 @@
                 scope.newArr.push(scope.tdRows.splice(0, cellsLength));
             }
             for (var i = 0; i < rowCount; i++) {
-                newRow += '<tr class="tbodyRow" ><td ng-repeat="n in newArr[' + i + '] track by $index">{{n}}</td></tr>';
+                newRow += '<tr class="tbodyRow" ><td ng-class=" { \'test\': $index === num} " ng-repeat="n in newArr[' + i + '] track by $index">{{n}}</td></tr>';
             }
-            tableHead = '<thead><tr><th ng-click="sortData($index)" class="thclass" ng-repeat="th in thRows track by $index">{{th}}</th></tr></thead>';
+            tableHead = '<thead><tr><th style="cursor:move" draggable drag="handleDrag"  dragData="{{th}}" dragImage="{{dragImageId}}" droppable drop="handleDrop" ng-class=" { \'test\': $index === num} " ng-click="sortData($index)" class="thclass" ng-repeat="th in thRows track by $index">{{th}}</th></tr></thead>';
             tableBody = '<tbody>' + newRow + '</tbody>';
             template = angular.element(tableHead + tableBody);
             $compile(template)(compileScope);
             element.replaceWith(template);
             // Sort data Types function
             scope.sortData = function($index) {
-                scope.index = $index;
-               
+                scope.num = $index;
                 scope.newArr.toggled_sort = function() {
                     console.log('sort');
                     var self = this;
@@ -66,7 +65,7 @@
                         if (isnum) {
                             return parseInt(l[$index]) > parseInt(r[$index]) ? (self.asc ? 1 : -1) : parseInt(l[$index]) < parseInt(r[$index]) ? (self.asc ? -1 : 1) : 0;
                         } else if (isCurency) {
-                            return  Number(l[$index].replace(/(^\$|,)/g,'')) >  Number(r[$index].replace(/(^\$|,)/g,'')) ? (self.asc ? 1 : -1) : Number(l[$index].replace(/(^\$|,)/g,'')) <  Number(r[$index].replace(/(^\$|,)/g,'')) ? (self.asc ? -1 : 1) : 0;
+                            return Number(l[$index].replace(/(^\$|,)/g, '')) > Number(r[$index].replace(/(^\$|,)/g, '')) ? (self.asc ? 1 : -1) : Number(l[$index].replace(/(^\$|,)/g, '')) < Number(r[$index].replace(/(^\$|,)/g, '')) ? (self.asc ? -1 : 1) : 0;
                         } else if (isDate) {
                             return new Date(l[$index]) > new Date(r[$index]) ? (self.asc ? 1 : -1) : new Date(l[$index]) < new Date(r[$index]) ? (self.asc ? -1 : 1) : 0;
                         } else if (floatExtract && !isDate) {
@@ -77,7 +76,7 @@
                     });
                 };
                 scope.newArr.toggled_sort();
-                
+
                 function getDate(string) {
                     if (typeof string !== 'string') {
                         return false;
@@ -107,8 +106,104 @@
             };
             // Default sort by first Column
             scope.sortData('0');
+            // Drag && Drop
+            scope.dragHead = '';
+            scope.dragImageId = "dragtable";
+            scope.handleDrop = function(draggedData,
+                targetElem) {
+                var swapArrayElements = function(array_object, index_a, index_b) {
+                    var temp = array_object[index_a];
+                    array_object[index_a] = array_object[index_b];
+                    array_object[index_b] = temp;
+                };
+                var srcInd = $scope.conf.heads.indexOf(draggedData);
+                var destInd = $scope.conf.heads.indexOf(targetElem.textContent);
+                swapArrayElements($scope.conf.heads, srcInd, destInd);
+            };
+            scope.handleDrag = function(columnName) {
+                $scope.dragHead = columnName.replace(/["']/g, "");
+            };
         }
 
         function directiveTableCOntroler() {}
+    }
+
+    function draggable() {
+        var directive = {
+            link: link,
+            restrict: 'EA'
+        };
+        return directive;
+        /** @ngInject */
+        function link(scope, elem, attr, vm) {
+            elem.attr("draggable", true);
+            var dragDataVal = '';
+            var draggedGhostImgElemId = '';
+            attr.$observe('dragdata', function(newVal) {
+                dragDataVal = newVal;
+            });
+            attr.$observe('dragimage', function(newVal) {
+                draggedGhostImgElemId = newVal;
+            });
+            elem.on('dragstart', function(e) {
+                var sendData = dragDataVal;
+                // e.dataTransfer.setData("Text", sendData);
+                e.originalEvent.dataTransfer.setData("text", sendData);
+                if (attr.dragimage !== 'undefined') {
+                    e.originalEvent.dataTransfer.setDragImage(
+                        // angular.element($('#draggedGhostImgElemId'));
+                        // document.getElementById(draggedGhostImgElemId), 0, 0
+                    );
+                }
+                var dragFn = attr.drag;
+                if (dragFn !== 'undefined') {
+                    scope.$apply(function() {
+                        scope[dragFn](sendData);
+                    });
+                }
+            });
+        }
+    }
+
+    function droppable($parse) {
+        var directive = {
+            link: link,
+            restrict: 'EA'
+        };
+        return directive;
+        /** @ngInject */
+        function link(scope, elem, attr, vm) {
+            function onDragOver(e) {
+                if (e.preventDefault) {
+                    e.preventDefault();
+                }
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                }
+                e.dataTransfer.dropEffect = 'move';
+                return false;
+            }
+
+            function onDrop(e) {
+                console.log("dropped");
+                if (e.preventDefault) {
+                    e.preventDefault();
+                }
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                }
+                var data = e.dataTransfer.getData("Text");
+                data = angular.fromJson(data);
+                var dropfn = attr.drop;
+                var fn = $parse(attr.drop);
+                var headerElem = e.target.closest('th');
+                var textOfHeader = angular.element(headerElem).find("a");
+                scope.$apply(function() {
+                    scope[dropfn](data, textOfHeader[0]);
+                });
+            }
+            elem.bind("dragover", onDragOver);
+            elem.bind("drop", onDrop);
+        }
     }
 })();
