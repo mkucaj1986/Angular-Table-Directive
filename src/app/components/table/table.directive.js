@@ -45,7 +45,6 @@
                 }
                 scope.tmpArray[i % cellsLength].push(scope.tdRows[i]);
             }
-            console.log(scope.tmpArray);
             while (scope.tdRows.length) {
                 scope.newArr.push(scope.tdRows.splice(0, cellsLength));
             }
@@ -113,9 +112,9 @@
             // Default sort by first Column
             scope.sortData('0');
             // Drag && Drop
-
             scope.handleDrag = function(tmpArrayIndexDrag) {
-                return scope.tmpArrayIndexDrag = tmpArrayIndexDrag;
+                scope.tmpArrayIndexDrag = tmpArrayIndexDrag;
+                return scope.tmpArrayIndexDrag;
                 scope.$apply(function() {
                     scope.tmpArrayIndexDrag;
                 });
@@ -123,11 +122,12 @@
             scope.handleDrop = function(tmpArrayIndexDrop, tmpArrayIndexDrag) {
                 var tmpArrayIndexDrag, swapArrayElement, srcInd, destInd;
                 scope.handleDrag(tmpArrayIndexDrag);
+
                 function swapArrayElements(array_object, index_a, index_b) {
                     var temp = array_object[index_a];
                     array_object[index_a] = array_object[index_b];
                     array_object[index_b] = temp;
-                };
+                }
                 srcInd = tmpArrayIndexDrag;
                 destInd = tmpArrayIndexDrop;
                 swapArrayElements(scope.thRows, srcInd, destInd);
@@ -150,7 +150,6 @@
             attr.$observe('dragdata', function(newVal) {
                 dragDataVal = newVal;
             });
-            var dragfn = attr.drag;
             elem.on('dragstart', function(e, $index) {
                 var tmpArrayIndexDrag;
                 angular.forEach(scope.thRows, function(item) {
@@ -169,7 +168,7 @@
         }
     }
 
-    function droppable($parse) {
+    function droppable() {
         var directive = {
             link: link,
             restrict: 'EA'
