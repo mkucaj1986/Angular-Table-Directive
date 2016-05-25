@@ -121,20 +121,16 @@
                 });
             };
             scope.handleDrop = function(tmpArrayIndexDrop, tmpArrayIndexDrag) {
-                var tmpArrayIndexDrag = scope.handleDrag(tmpArrayIndexDrag);
-                var swapArrayElements = function(array_object, index_a, index_b) {
+                var tmpArrayIndexDrag, swapArrayElement, srcInd, destInd;
+                scope.handleDrag(tmpArrayIndexDrag);
+                function swapArrayElements(array_object, index_a, index_b) {
                     var temp = array_object[index_a];
                     array_object[index_a] = array_object[index_b];
                     array_object[index_b] = temp;
                 };
-                var srcInd = tmpArrayIndexDrag;
-                var destInd = tmpArrayIndexDrop;
-                swapArrayElements(scope.tmpArray, srcInd, destInd);
-                var n = [];
-                for(var i = 0; i < scope.tmpArray.length; i++){
-                    n = scope.tmpArray[i];
-                } 
-                    console.log(n);
+                srcInd = tmpArrayIndexDrag;
+                destInd = tmpArrayIndexDrop;
+                swapArrayElements(scope.thRows, srcInd, destInd);
             };
         }
 
