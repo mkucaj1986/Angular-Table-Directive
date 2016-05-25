@@ -26,7 +26,6 @@
             cells = angular.element($('td'));
             table = angular.element($('table'));
             thead = angular.element($('th'));
-            console.log(thead);
             rowCount = element.find($('tr')).length;
             newRow = '';
             cellsLength = table[0].rows[0].cells.length;
@@ -39,6 +38,14 @@
             angular.forEach(cells, function(item) {
                 scope.tdRows.push(item.innerHTML);
             });
+            scope.tmpArray = [];
+            for (var i = 0; i < scope.tdRows.length; i++) {
+                if (!scope.tmpArray[i % cellsLength]) {
+                    scope.tmpArray[i % cellsLength] = [];
+                }
+                scope.tmpArray[i % cellsLength].push(scope.tdRows[i]);
+            }
+            console.log(scope.tmpArray);
             while (scope.tdRows.length) {
                 scope.newArr.push(scope.tdRows.splice(0, cellsLength));
             }
@@ -54,7 +61,6 @@
             scope.sortData = function($index) {
                 scope.num = $index;
                 scope.newArr.toggled_sort = function() {
-                    console.log('sort');
                     var self = this;
                     self.asc = !self.asc;
                     return this.sort(function(l, r) {
@@ -107,21 +113,28 @@
             // Default sort by first Column
             scope.sortData('0');
             // Drag && Drop
-            scope.dragHead = '';
-            scope.dragImageId = "dragtable";
-            scope.handleDrop = function(draggedData,
-                targetElem) {
+
+            scope.handleDrag = function(tmpArrayIndexDrag) {
+                return scope.tmpArrayIndexDrag = tmpArrayIndexDrag;
+                scope.$apply(function() {
+                    scope.tmpArrayIndexDrag;
+                });
+            };
+            scope.handleDrop = function(tmpArrayIndexDrop, tmpArrayIndexDrag) {
+                var tmpArrayIndexDrag = scope.handleDrag(tmpArrayIndexDrag);
                 var swapArrayElements = function(array_object, index_a, index_b) {
                     var temp = array_object[index_a];
                     array_object[index_a] = array_object[index_b];
                     array_object[index_b] = temp;
                 };
-                var srcInd = $scope.conf.heads.indexOf(draggedData);
-                var destInd = $scope.conf.heads.indexOf(targetElem.textContent);
-                swapArrayElements($scope.conf.heads, srcInd, destInd);
-            };
-            scope.handleDrag = function(columnName) {
-                $scope.dragHead = columnName.replace(/["']/g, "");
+                var srcInd = tmpArrayIndexDrag;
+                var destInd = tmpArrayIndexDrop;
+                swapArrayElements(scope.tmpArray, srcInd, destInd);
+                var n = [];
+                for(var i = 0; i < scope.tmpArray.length; i++){
+                    n = scope.tmpArray[i];
+                } 
+                    console.log(n);
             };
         }
 
@@ -138,27 +151,22 @@
         function link(scope, elem, attr, vm) {
             elem.attr("draggable", true);
             var dragDataVal = '';
-            var draggedGhostImgElemId = '';
             attr.$observe('dragdata', function(newVal) {
                 dragDataVal = newVal;
             });
-            attr.$observe('dragimage', function(newVal) {
-                draggedGhostImgElemId = newVal;
-            });
-            elem.on('dragstart', function(e) {
-                var sendData = dragDataVal;
-                // e.dataTransfer.setData("Text", sendData);
-                e.originalEvent.dataTransfer.setData("text", sendData);
-                if (attr.dragimage !== 'undefined') {
-                    e.originalEvent.dataTransfer.setDragImage(
-                        // angular.element($('#draggedGhostImgElemId'));
-                        // document.getElementById(draggedGhostImgElemId), 0, 0
-                    );
-                }
+            var dragfn = attr.drag;
+            elem.on('dragstart', function(e, $index) {
+                var tmpArrayIndexDrag;
+                angular.forEach(scope.thRows, function(item) {
+                    if (item === e.currentTarget.textContent) {
+                        tmpArrayIndexDrag = scope.thRows.indexOf(item);
+                        return tmpArrayIndexDrag;
+                    }
+                });
                 var dragFn = attr.drag;
                 if (dragFn !== 'undefined') {
                     scope.$apply(function() {
-                        scope[dragFn](sendData);
+                        scope[dragFn](tmpArrayIndexDrag);
                     });
                 }
             });
@@ -173,6 +181,8 @@
         return directive;
         /** @ngInject */
         function link(scope, elem, attr, vm) {
+            var tmpArrayIndexDrop, tmpArrayIndexDrag;
+
             function onDragOver(e) {
                 if (e.preventDefault) {
                     e.preventDefault();
@@ -180,27 +190,29 @@
                 if (e.stopPropagation) {
                     e.stopPropagation();
                 }
-                e.dataTransfer.dropEffect = 'move';
                 return false;
             }
 
             function onDrop(e) {
-                console.log("dropped");
                 if (e.preventDefault) {
                     e.preventDefault();
                 }
                 if (e.stopPropagation) {
                     e.stopPropagation();
                 }
-                var data = e.dataTransfer.getData("Text");
-                data = angular.fromJson(data);
-                var dropfn = attr.drop;
-                var fn = $parse(attr.drop);
-                var headerElem = e.target.closest('th');
-                var textOfHeader = angular.element(headerElem).find("a");
-                scope.$apply(function() {
-                    scope[dropfn](data, textOfHeader[0]);
+                tmpArrayIndexDrag = scope.$parent.tmpArrayIndexDrag;
+                angular.forEach(scope.thRows, function(item) {
+                    if (item === e.currentTarget.textContent) {
+                        tmpArrayIndexDrop = scope.thRows.indexOf(item);
+                        return tmpArrayIndexDrop;
+                    }
                 });
+                var dropFn = attr.drop;
+                if (dropFn !== 'undefined') {
+                    scope.$apply(function() {
+                        scope[dropFn](tmpArrayIndexDrop, tmpArrayIndexDrag);
+                    });
+                }
             }
             elem.bind("dragover", onDragOver);
             elem.bind("drop", onDrop);
