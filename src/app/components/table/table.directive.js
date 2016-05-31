@@ -32,9 +32,15 @@
             scope.thRows = [];
             scope.tdRows = [];
             scope.newArr = [];
-            angular.forEach(thead, function(item) {
-                return scope.thRows.push(item.innerHTML);
-            });
+            if(thead.length === 0){
+                for (var i = 0; i < cellsLength; i++) {
+                    scope.thRows.push([i]);
+                }
+            }else{
+                angular.forEach(thead, function(item) {
+                    return scope.thRows.push(item.innerHTML);
+                });
+            }
             angular.forEach(cells, function(item) {
                 scope.tdRows.push(item.innerHTML);
             });
@@ -131,6 +137,13 @@
                 srcInd = tmpArrayIndexDrag;
                 destInd = tmpArrayIndexDrop;
                 swapArrayElements(scope.thRows, srcInd, destInd);
+                swapArrayElements(scope.tmpArray, srcInd, destInd);
+
+                scope.newArr = scope.tmpArray[0].map(function(col, i) {
+                    return scope.tmpArray.map(function(row) {
+                        return row[i];
+                    });
+                });
             };
         }
 
