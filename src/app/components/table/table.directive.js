@@ -159,10 +159,6 @@
         /** @ngInject */
         function link(scope, elem, attr, vm) {
             elem.attr("draggable", true);
-            var dragDataVal = '';
-            attr.$observe('dragdata', function(newVal) {
-                dragDataVal = newVal;
-            });
             elem.on('dragstart', function(e, $index) {
                 var tmpArrayIndexDrag;
                 angular.forEach(scope.thRows, function(item) {
