@@ -23,9 +23,9 @@
         function link(scope, element, attrs, vm) {
             var table, thead, tableHead, cells, template, compileScope, tableBody, cellsLength, newRow, rowCount;
             compileScope = scope;
-            cells = angular.element($('td'));
+            cells = element.find($('td'));
             table = angular.element($('table'));
-            thead = angular.element($('th'));
+            thead = element.find($('th'));
             rowCount = element.find($('tr')).length;
             newRow = '';
             cellsLength = table[0].rows[0].cells.length;
@@ -62,6 +62,7 @@
             template = angular.element(tableHead + tableBody);
             $compile(template)(compileScope);
             element.replaceWith(template);
+
             // Sort data Types function
             scope.sortData = function($index) {
                 scope.num = $index;
@@ -110,6 +111,11 @@
                     // Match format: Jan 18, 2001 09:12 AM
                     var regex4 = /^[JFMASOND](?:an|eb|ar|pr|ay|un|ul|ug|ep|ct|ov|ec)\s(([0]?[1-9])|([1-2][0-9])|(3[01])),\s[0-9]{4}\s(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/;
                     if (regex4.test(string)) {
+                        return true;
+                    }
+                    // Match format: 11/03, 13/03, 01/04
+                    var regex5 = /^((0[1-9])|(1[0-2]))\/(\d{2})$/;
+                    if (regex5.test(string)) {
                         return true;
                     }
                     return false;
